@@ -9,7 +9,7 @@ config();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-
+//connect to DB
 async function connectDB() {
     try {
         await mongoose.connect(process.env.DB_URL);
@@ -22,7 +22,7 @@ async function connectDB() {
 connectDB();
 
 
-
+//Directing to the main routes
 
 app.use('/auth_demo', router);
 

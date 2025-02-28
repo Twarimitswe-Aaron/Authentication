@@ -8,6 +8,5 @@ router.post('/resetPass', resetPass);
 router.post('/signin', signin);
 router.post('/verifyReset', verifyReset);
 
-/* router.put('./update', update)
-router.get('.get', get) */
+
 export default router;
