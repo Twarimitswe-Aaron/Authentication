@@ -124,4 +124,49 @@ const signin = async (req, res) => {
     }
 }
 
-export { signup, signin, generateOTP, verify };
+const resetStore=new Map();
+const resetPass=async (req,res)=>{
+    try{
+        const {email,password,rePassword}=req.body;
+        if(password!==rePassword){
+            return res.status(400).json({message:"Passwords do not match"});
+        }
+        const userl=await userModel.findOne({email});
+        if(!userl){
+            return res.status(400).json({message:"create account because User does not exist"});
+        }
+        
+        const otp=cryptoRandomString({length:6,type:'numeric'});
+        const otpExpiry=Date.now()+5*60*1000;
+        resetStore.set(email,{email,password,rePassword,otp,otpExpiry});
+        await sendOTP(email,otp);
+        res.status(200).json({message:`OTP sent to ${email}`});
+    }catch(err){
+        res.status(500).json({message:err.message});
+    }
+}
+const verifyReset=async (req,res)=>{
+    try{
+        const {email,otp}=req.body;
+        const resetData=resetStore.get(email,password,otp,otpExpiry);
+        if(resetData.password!==resetData.rePassword){
+            return res.status(400).json({message:"Passwords do not match"});
+        }
+       
+        if(!resetData || resetData.otp!==otp || Date.now()>resetData.otpExpiry){
+            return res.status(400).json({message:"Invalid OTP"});
+        }
+        const user=await userModel.findOne({email});
+        const salt=await bcrypt.genSalt(10);
+        const hashedPassword=await bcrypt.hash(resetData.password,salt);
+        user.password=hashedPassword;
+        resetstore.delete(email);
+        res.status(200).json({message:"OTP verified successfully"});
+
+
+    }catch(err){
+        res.status(500).json({message:err.message});
+}
+}
+
+export {signin, generateOTP , resetPass, verifyReset};
