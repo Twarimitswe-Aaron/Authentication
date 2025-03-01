@@ -111,12 +111,12 @@ const resetStore=new Map();
 //create a reset which make first otp
 const resetPass=async (req,res)=>{
     try{
-        const {email,password,rePassword}=req.body;
+        const {name,email,password,rePassword}=req.body;
         if(password!==rePassword){
             return res.status(400).json({message:"Passwords do not match"});
         }
-        const userl=await userModel.findOne({email});
-        if(!userl){
+        const user=await userModel.findOne({email,name});
+        if(!user){
             return res.status(400).json({message:"create account because User does not exist"});
         }
         
