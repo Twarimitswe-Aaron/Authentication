@@ -35,7 +35,7 @@ const generateOTP = async (req, res) => {
 
 //verify if the otp is correct during account creation
 
-const verify = async (req, res) => {
+const verifyEmail = async (req, res) => {
     try {
         const { email, otp } = req.body;
         const otpData=otpStore.get(email);
@@ -85,6 +85,12 @@ const signin = async (req, res) => {
 
         const token = JWT.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
         // Here I will add cookie 
+        res.cookie("auth_cookie",token,{
+            httpOnly:true,
+            secure:true,
+            sameSite:'strict'
+        })
+
 
 
 
@@ -153,5 +159,6 @@ const verifyReset=async (req,res)=>{
 export {signin, 
     generateOTP, 
     resetPass, 
-    verifyReset
+    verifyReset,
+    verifyEmail
 };
