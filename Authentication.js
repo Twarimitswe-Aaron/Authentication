@@ -2,6 +2,8 @@ import express from 'express';
 import mongoose from 'mongoose';
 import { config } from 'dotenv';
 import router from './Routes/authRoutes.js';
+import session from 'express-session';
+import passport from 'passport';
 
 
 const app = express();
@@ -20,6 +22,18 @@ async function connectDB() {
     }
 }
 connectDB();
+
+//Middleware for sessions
+
+app.use(session({
+    secret:process.env.SESSION_SECRET,
+    resave:true,
+    saveUninitialized:true,
+}));
+
+//Initialize passport
+app.use(passport.initialize());
+app.use(passport.session())
 
 
 //Directing to the main routes
