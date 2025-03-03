@@ -2,9 +2,19 @@ import mongoose from 'mongoose';
 
 //create a schema for user
 const userSchema=new mongoose.Schema({
+    googleId:{
+        type:String,
+        required:true,
+        unique:true,
+    },
+    photo:{
+        type:String
+
+    },
     name:{
         type:String, 
-        required:true
+        required:true,
+        unique:true
     },
     email:{
         type:String, 
@@ -18,7 +28,7 @@ const userSchema=new mongoose.Schema({
     },
     otp:{type:Number},
     otpExpiry:{type:Date}
-}, {timistamps:true});
+}, {timestamps:true});
 
 //creating a model
 
