@@ -1,14 +1,18 @@
-import express, { Router } from 'express';
+import express from 'express';
 const router=express.Router()
-import { signin, resetPass, generateOTP, verifyReset,verifyEmail } from '../Controllers/autho_controller.js';
+import authController from '../Controllers/auth_controller.js';
 
 
 
-router.post('/generateOTP', generateOTP);
-router.post('/resetPass', resetPass);
-router.post('/signin', signin);
-router.post('/verifyReset', verifyReset);
-router.post('/verifyEmail',verifyEmail)
+
+router.post('/generateOTP', authController.generateOTP);
+router.post('/resetPass', authController.resetPass);
+router.post('/signin', authController.signin);
+router.post('/verifyReset', authController.verifyReset);
+router.post('/verifyEmail',authController.verifyEmail);
+router.get("/google",authController.googleLogin);
+router.get('/google/callback', authController.googleCallback, authController.successRedirect);
+router.get('/logout',authController.logout);
 
 
 export default router;

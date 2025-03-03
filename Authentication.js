@@ -4,6 +4,7 @@ import { config } from 'dotenv';
 import router from './Routes/authRoutes.js';
 import session from 'express-session';
 import passport from 'passport';
+import cors from 'cors';
 
 
 const app = express();
@@ -24,7 +25,7 @@ async function connectDB() {
 connectDB();
 
 //Middleware for sessions
-
+app.use(cors({origin:`http://localhost:${process.env.PORT}`, credentials:true}))
 app.use(session({
     secret:process.env.SESSION_SECRET,
     resave:true,
@@ -41,7 +42,7 @@ app.use(passport.session())
 app.use('/auth_demo', router);
 
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT;
 
 
 app.listen(PORT, () => {

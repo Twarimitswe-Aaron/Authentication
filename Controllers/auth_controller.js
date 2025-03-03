@@ -3,6 +3,7 @@ import userModel from '../Models/user.js';
 import sendOTP from '../utils/mailers.js';  
 import JWT from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
+import passport from 'passport';
 
 
 //temporary store for email related information
@@ -41,7 +42,10 @@ const verifyEmail = async (req, res) => {
         const otpData=otpStore.get(email);
         const {name, password } = otpData;
 
-        if (!otpData || otpData.otp !== otp || Date.now() > otpData.otpExpiry) {
+        if(!otpData){
+            return res.status(400).json({message:"OTP not found or expired"})
+        }
+        if ( otp !== otp || Date.now() > otpData.otpExpiry) {
             
             return res.status(400).json({ message: "Invalid OTP" });
             
@@ -84,7 +88,8 @@ const signin = async (req, res) => {
         }
 
         const token = JWT.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        // Here I will add cookie 
+        
+        //add cookie 
         res.cookie("auth_cookie",token,{
             httpOnly:true,
             secure:true,
@@ -108,7 +113,7 @@ const signin = async (req, res) => {
 //create a temporary variable to hold email related information
 const resetStore=new Map();
 
-//create a reset which make first otp
+//create a reset which makes the first otp
 const resetPass=async (req,res)=>{
     try{
         const {name,email,password,rePassword}=req.body;
@@ -117,7 +122,7 @@ const resetPass=async (req,res)=>{
         }
         const user=await userModel.findOne({email,name});
         if(!user){
-            return res.status(400).json({message:"create account because User does not exist"});
+            return res.status(400).json({message:"User does not exist, please create an account"});
         }
         
         const otp=cryptoRandomString({length:6,type:'numeric'});
@@ -140,7 +145,7 @@ const verifyReset=async (req,res)=>{
             return res.status(400).json({message:"Passwords do not match"});
         }
        
-        if(!resetData || otp!==otp || Date.now()>otpExpiry){
+        if(!resetData || otp!==resetData.otp || Date.now()>otpExpiry){
             return res.status(400).json({message:"Invalid OTP"});
         }
         const user=await userModel.findOne({email});
@@ -156,9 +161,42 @@ const verifyReset=async (req,res)=>{
 }
 }
 
-export {signin, 
+//creating google based login
+const googleLogin=passport.authenticate("google",{scope:["profile","email"]});
+
+//google callback after authentication
+const googleCallback=(req,res,next)=>{
+    passport.authenticate("google", (err,user,info)=>{
+        if(err)return next(err);
+        if(!user)return res.redirect(`http://localhost:${process.env.PORT}/login`);
+
+        req.logIn(user,(err)=>{
+            if(err) return next(err);
+            res.redirect(`http://localhost:${process.env.PORT}/dashboard`);
+        });
+    })(req,res,next);
+}
+
+//redirect after successful login
+const successRedirect=(req,res)=>{
+    res.redirect(`http://localhost:${process.env.PORT}/dashboard`);
+}
+
+const logout=(req,res,next)=>{
+req.logout((err)=>{
+    if(err) return next(err);
+    res.redirect(`http://localhost:${process.env.PORT}`)
+});
+}
+
+
+export default {signin, 
     generateOTP, 
     resetPass, 
     verifyReset,
-    verifyEmail
+    verifyEmail,
+    googleLogin,
+    googleCallback,
+    successRedirect,
+    logout
 };
